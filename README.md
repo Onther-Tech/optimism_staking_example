@@ -18,7 +18,9 @@ const tx2_2 = await L1_ERC20Gateway.connect(l1Wallet2).deposit(2000)
 await tx2_2.wait()
 ```
 <br>
+
 2.Staking
+
 ```
   //stake test
   console.log('--------------------------------')
