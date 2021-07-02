@@ -9,3 +9,4 @@ cache-ovm/
 optimism
 
 .env
+.DS_Store

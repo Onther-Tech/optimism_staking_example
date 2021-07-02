@@ -1,0 +1,130 @@
+// SPDX-License-Identifier: MIT LICENSE
+pragma solidity >0.5.0 <0.8.0;
+pragma experimental ABIEncoderV2;
+
+/* Contract Imports */
+import { ERC20 } from "./ERC20.sol";
+
+
+/**
+ * @title L2StakingERC20
+ */
+contract L2StakingERC20 {
+
+    struct Checkpoint {
+        uint256 at;
+        uint256 amount;
+    }
+
+    ERC20 public ton;
+
+    Checkpoint[] public stakeHistory;
+
+    mapping (address => Checkpoint[]) public stakesFor;
+
+    /**
+     * @param _name Name for the ERC20 token.
+     */
+    constructor(
+        ERC20 ton,
+    )
+       public
+    {
+        _ton = ton
+    }
+
+   
+
+    function stake(
+        uint256 _amount
+    ) 
+        public
+    {
+        updateCheckpoint(stakesFor[msg.sender], _amount, false);
+        updateCheckpoint(stakeHistory, _amount, false);
+
+        require(ton.transferFrom(address(this), _amount), "stake transfer fail");    
+    }
+
+
+    function updateCheckpoint(
+        Checkpoint[] storage history,
+        uint256 amount,
+        bool isUnstake
+    )
+        internal
+    {
+        uint256 length = history.length;
+        if(length == 0) {
+            history.push(Checkpoint({at: block.number, amount: amount}));
+            return;
+        }
+
+        if(history[length-1].at < block.number) {
+            history.push(Checkpoint({at: block.number, amount: history[length-1].amount}));
+        }
+
+        Checkpoint storage checkpoint = history[length];
+
+        if (isUnstake) {
+            checkpoint.amount = checkpoint.amount - amount;
+        } else {
+            checkpoint.amount = checkpoint.amount + amount;
+        }
+
+    }
+
+    function unstake(
+        uint256 _amount
+    )
+        public 
+    {
+        // require(totalStakedFor(msg.sender) >= _amount, "lack the staking amount");
+
+        updateCheckpoint(stakesFor[msg.sender], _amount, true);
+        updateCheckpoint(stakeHistory, _amount, true);
+        
+        // transfer(msg.sender, _amount);
+        require(ton.transfer(msg.sender, _amount), "unstake transfer fail");
+    }
+
+    //addr가 얼만큼 스테이킹했는지 리턴해줌
+    function totalStakedFor(
+        address _addr
+    )
+        public 
+        view
+        returns (
+            uint256
+        )
+    {
+        Checkpoint[] storage stakes = stakesFor[_addr];
+
+        if (stakes.length == 0) {
+            return 0;
+        }
+
+        return stakes[stakes.length-1].amount;
+    }   
+
+    //addr가 언제 마지막으로 스테이킹했는지 리턴해줌
+    function lastStakedBlock(
+        address _addr
+    )
+        public
+        view
+        returns (
+            uint256
+        )
+    {
+        Checkpoint[] storage stakes = stakesFor[_addr];
+
+        if (stakes.length == 0) {
+            return 0;
+        }
+
+        return stakes[stakes.length-1].at;
+    }
+
+
+}

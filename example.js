@@ -89,7 +89,7 @@ async function main() {
   // console.log('l2wallet2 :', l2Wallet2.address)
   // console.log('L1_ERC20 address : ', L1_ERC20.address)
   // console.log('L1_L2_gateway address : ', L1_ERC20Gateway.address)
-  // console.log('L2_ERC20 address : ', L2_ERC20.address)
+  console.log('L2_ERC20 address : ', L2_ERC20.address)
 
   // Initial balances.
   console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 5000
@@ -145,10 +145,21 @@ async function main() {
   console.log("eth balance l1Wallet",balance1.toString())
   const balance2 = await l2Wallet.getBalance()
   console.log("eth balance l2Wallet",balance2.toString())
+  // const l2_ethtransfer = await l2Wallet.sendTransaction({ 
+  //   to: L2_ERC20.address, 
+  //   value: ethers.utils.parseEther("1.0"),
+  //   gasPrice: 0
+  // })
+  // // 9383544933940000004
+  // // 1000000000000000000
+  // await l2_ethtransfer.wait()
+
   const balance3 = await l1Wallet2.getBalance()
   console.log("eth balance l1Wallet2",balance3.toString())
   const balance4 = await l2Wallet2.getBalance()
   console.log("eth balance l2Wallet2",balance4.toString())
+  // const balance5 = await L2_ERC20.getBalance()
+  // console.log("eth balance5 L2_ERC20",balance5.toString())
 
 
   // L2_ERC20 transfer test
@@ -161,29 +172,27 @@ async function main() {
     }
   )
   await l2_transfer.wait()
-
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 2000 (3000 - 1000)
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 (2000 + 1000)
 
   //stake test
-  console.log('--------------------------------')
-  console.log('approve staking token Layer2')
-  const l2_stakeApprove = await L2_ERC20.connect(l2Wallet).approve(
-    L2_ERC20.address, 
-    1000,
-    {
-      gasPrice: 0
-    }
-  )
-  await l2_stakeApprove.wait()
+  // console.log('--------------------------------')
+  // console.log('approve staking token Layer2')
+  // const l2_stakeApprove = await L2_ERC20.connect(l2Wallet).approve(
+  //   L2_ERC20.address, 
+  //   1000,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // await l2_stakeApprove.wait()
   console.log('--------------------------------')
   console.log('staking token Layer2')
   console.log('--------------------------------')
   const l2_staking = await L2_ERC20.connect(l2Wallet).stake(
     1000,
     {
-      gasLimit: 6100000,
-      gasPrice: 15000000
+      gasPrice: 0
     }
   )
   await l2_staking.wait()
@@ -193,6 +202,23 @@ async function main() {
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(L2_ERC20.address)}`) // 1000
   console.log('--------------------------------')
 
+  //unstake test
+  console.log('--------------------------------')
+  console.log('unstaking token Layer2')
+  console.log('--------------------------------')
+  const l2_unstaking = await L2_ERC20.connect(l2Wallet).unstake(
+    1000,
+    {
+      gasPrice: 0
+    }
+  )
+  await l2_unstaking.wait()
+
+  console.log('--------------------------------')
+  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 1000
+  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 
+  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(L2_ERC20.address)}`) // 1000
+  console.log('--------------------------------')
 
   // // Burn the tokens on L2 and ask the L1 contract to unlock on our behalf.
   // console.log(`Withdrawing tokens back to L1 ERC20...`)
