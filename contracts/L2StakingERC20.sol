@@ -3,7 +3,7 @@ pragma solidity >0.5.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
 /* Contract Imports */
-import { ERC20 } from "./ERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 /**
@@ -16,34 +16,29 @@ contract L2StakingERC20 {
         uint256 amount;
     }
 
-    ERC20 public ton;
+    IERC20 public ton;
 
     Checkpoint[] public stakeHistory;
 
     mapping (address => Checkpoint[]) public stakesFor;
 
-    /**
-     * @param _name Name for the ERC20 token.
-     */
     constructor(
-        ERC20 ton,
+        address _ton
     )
        public
     {
-        _ton = ton
+        ton = IERC20(_ton);
     }
-
-   
-
+    
     function stake(
         uint256 _amount
     ) 
-        public
+        external
     {
         updateCheckpoint(stakesFor[msg.sender], _amount, false);
         updateCheckpoint(stakeHistory, _amount, false);
 
-        require(ton.transferFrom(address(this), _amount), "stake transfer fail");    
+        require(ton.transferFrom(msg.sender, address(this), _amount), "stake transfer fail");    
     }
 
 
@@ -77,9 +72,9 @@ contract L2StakingERC20 {
     function unstake(
         uint256 _amount
     )
-        public 
+        external 
     {
-        // require(totalStakedFor(msg.sender) >= _amount, "lack the staking amount");
+        require(totalStakedFor(msg.sender) >= _amount, "lack the staking amount");
 
         updateCheckpoint(stakesFor[msg.sender], _amount, true);
         updateCheckpoint(stakeHistory, _amount, true);

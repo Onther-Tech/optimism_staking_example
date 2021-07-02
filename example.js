@@ -10,6 +10,7 @@ const factory = (name, ovm = false) => {
 const factory__L1_ERC20 = factory('ERC20')
 const factory__L2_ERC20 = factory('L2DepositedERC20', true)
 const factory__L1_ERC20Gateway = getContractFactory('OVM_L1ERC20Gateway')
+const factory__L2_Staking = factory('L2StakingERC20', true)
 
 async function main() {
   // Set up our RPC provider connections.
@@ -63,6 +64,16 @@ async function main() {
   )
   await L2_ERC20.deployTransaction.wait()
 
+  // Deploy the staking to L2
+  console.log('Deploying L2 Staking...')
+  const L2_Staking = await factory__L2_Staking.connect(l2Wallet).deploy(
+    L2_ERC20.address,
+    {
+      gasPrice: 0    
+    }
+  )
+  await L2_Staking.deployTransaction.wait()
+
   // Create a gateway that connects the two contracts.
   console.log('Deploying L1 ERC20 Gateway...')
   const L1_ERC20Gateway = await factory__L1_ERC20Gateway.connect(l1Wallet).deploy(
@@ -90,6 +101,7 @@ async function main() {
   // console.log('L1_ERC20 address : ', L1_ERC20.address)
   // console.log('L1_L2_gateway address : ', L1_ERC20Gateway.address)
   console.log('L2_ERC20 address : ', L2_ERC20.address)
+  console.log('L2_Staking address : ', L2_Staking.address)
 
   // Initial balances.
   console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 5000
@@ -175,50 +187,121 @@ async function main() {
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 2000 (3000 - 1000)
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 (2000 + 1000)
 
-  //stake test
-  // console.log('--------------------------------')
-  // console.log('approve staking token Layer2')
-  // const l2_stakeApprove = await L2_ERC20.connect(l2Wallet).approve(
-  //   L2_ERC20.address, 
-  //   1000,
-  //   {
-  //     gasPrice: 0
-  //   }
-  // )
-  // await l2_stakeApprove.wait()
+  // stake test
+  console.log('--------------------------------')
+  console.log('approve staking token Layer2')
+  const l2_stakeApprove = await L2_ERC20.connect(l2Wallet).approve(
+    L2_Staking.address, 
+    3000,
+    {
+      gasPrice: 0
+    }
+  )
+  await l2_stakeApprove.wait()
+
+  const l2_allowance = await L2_ERC20.connect(l2Wallet).allowance(
+    l2Wallet.address,
+    L2_Staking.address,
+    {
+      gasPrice: 0
+    }
+  )
+  console.log(l2_allowance.toString())
   console.log('--------------------------------')
   console.log('staking token Layer2')
   console.log('--------------------------------')
-  const l2_staking = await L2_ERC20.connect(l2Wallet).stake(
+  const l2_staking = await L2_Staking.connect(l2Wallet).stake(
     1000,
     {
       gasPrice: 0
     }
   )
   await l2_staking.wait()
+
+  // const l2_stakingERC20 = await L2_Staking.ton(
+  //   {
+  //     gasPrice: 0
+  //   }
+  // );
+  // console.log(l2_stakingERC20)
+  
   console.log('--------------------------------')
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 1000
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 
-  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(L2_ERC20.address)}`) // 1000
+  console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 1000
   console.log('--------------------------------')
+
+  //updateCheckpoint test
+  // console.log('--------------------------------')
+  // console.log('totalStakedFor token Layer2')
+  // console.log('--------------------------------')
+  // const l2_totalStakedFor = await L2_Staking.totalStakedFor(
+  //   l2Wallet.address,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // console.log(l2_totalStakedFor.toString())
+
+  // console.log('--------------------------------')
+  // console.log('lastStakedBlock token Layer2')
+  // console.log('--------------------------------')
+  // const l2_lastStakedBlock = await L2_Staking.totalStakedFor(
+  //   l2Wallet.address,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // console.log(l2_lastStakedBlock.toString())
+
+
+  //transferFrom test
+  // console.log('--------------------------------')
+  // console.log('transferFrom token Layer2')
+  // console.log('--------------------------------')
+  // const l2_transferFrom = await L2_ERC20.connect(l2Wallet2).transferFrom(
+  //   l2Wallet.address,
+  //   L2_Staking.address,
+  //   1000,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // await l2_transferFrom.wait()
+  
+  // console.log('--------------------------------')
+  // console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 1000
+  // console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 
+  // console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 1000
+  // console.log('--------------------------------')
+  
+  // let l2_allowance2 = await L2_ERC20.connect(l2Wallet).allowance(
+  //   l2Wallet.address,
+  //   l2Wallet2.address,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // console.log(l2_allowance2.toString())
+
 
   //unstake test
-  console.log('--------------------------------')
-  console.log('unstaking token Layer2')
-  console.log('--------------------------------')
-  const l2_unstaking = await L2_ERC20.connect(l2Wallet).unstake(
-    1000,
-    {
-      gasPrice: 0
-    }
-  )
-  await l2_unstaking.wait()
+  // console.log('--------------------------------')
+  // console.log('unstaking token Layer2')
+  // console.log('--------------------------------')
+  // const l2_unstaking = await L2_Staking.connect(l2Wallet).unstake(
+  //   1000,
+  //   {
+  //     gasPrice: 0
+  //   }
+  // )
+  // await l2_unstaking.wait()
 
-  console.log('--------------------------------')
-  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 1000
-  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 
-  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(L2_ERC20.address)}`) // 1000
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
+  // console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 2000
+  // console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000 
+  // console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 0
+  // console.log('--------------------------------')
 
   // // Burn the tokens on L2 and ask the L1 contract to unlock on our behalf.
   // console.log(`Withdrawing tokens back to L1 ERC20...`)
