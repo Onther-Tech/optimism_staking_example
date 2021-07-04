@@ -5,11 +5,13 @@ pragma experimental ABIEncoderV2;
 /* Contract Imports */
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 /**
  * @title L2StakingERC20
  */
 contract L2StakingERC20 {
+    using SafeMath for uint256;
 
     struct Checkpoint {
         uint256 at;
@@ -18,16 +20,20 @@ contract L2StakingERC20 {
 
     IERC20 public ton;
 
-    Checkpoint[] public stakeHistory;
+    mapping (address => Checkpoint) public stakesFor;
 
-    mapping (address => Checkpoint[]) public stakesFor;
+    uint256 totalAmount = 0;
+
+    uint256 public tokenPerBlock;
 
     constructor(
-        address _ton
+        address _ton,
+        uint256 _tokenPerBlock
     )
        public
     {
         ton = IERC20(_ton);
+        tokenPerBlock = _tokenPerBlock;
     }
     
     function stake(
@@ -35,36 +41,28 @@ contract L2StakingERC20 {
     ) 
         external
     {
-        updateCheckpoint(stakesFor[msg.sender], _amount, false);
-        updateCheckpoint(stakeHistory, _amount, false);
+        updateCheckpoint(msg.sender, _amount, false);
 
         require(ton.transferFrom(msg.sender, address(this), _amount), "stake transfer fail");    
     }
 
 
     function updateCheckpoint(
-        Checkpoint[] storage history,
+        address _user,
         uint256 amount,
         bool isUnstake
     )
         internal
     {
-        uint256 length = history.length;
-        if(length == 0) {
-            history.push(Checkpoint({at: block.number, amount: amount}));
-            return;
-        }
-
-        if(history[length-1].at < block.number) {
-            history.push(Checkpoint({at: block.number, amount: history[length-1].amount}));
-        }
-
-        Checkpoint storage checkpoint = history[length];
+        Checkpoint storage check = stakesFor[_user];
+        check.at = block.number;
 
         if (isUnstake) {
-            checkpoint.amount = checkpoint.amount - amount;
+            check.amount = check.amount - amount;
+            totalAmount = totalAmount - amount;
         } else {
-            checkpoint.amount = checkpoint.amount + amount;
+            check.amount = check.amount + amount;
+            totalAmount = totalAmount + amount;
         }
 
     }
@@ -76,16 +74,25 @@ contract L2StakingERC20 {
     {
         require(totalStakedFor(msg.sender) >= _amount, "lack the staking amount");
 
-        updateCheckpoint(stakesFor[msg.sender], _amount, true);
-        updateCheckpoint(stakeHistory, _amount, true);
+        updateCheckpoint(msg.sender, _amount, true);
         
         // transfer(msg.sender, _amount);
         require(ton.transfer(msg.sender, _amount), "unstake transfer fail");
     }
 
+    function claim() external {
+        Checkpoint storage check = stakesFor[msg.sender];
+
+        require(totalStakedFor(msg.sender) > 0, "lack the staking amount");
+        uint256 reward = ((block.number).sub(check.at)).mul(tokenPerBlock).mul(check.amount).div(totalAmount);       
+        check.at = block.number;
+
+        require(ton.transfer(msg.sender, reward), "claim transfer fail");
+    }
+
     //addr가 얼만큼 스테이킹했는지 리턴해줌
     function totalStakedFor(
-        address _addr
+        address _user
     )
         public 
         view
@@ -93,18 +100,14 @@ contract L2StakingERC20 {
             uint256
         )
     {
-        Checkpoint[] storage stakes = stakesFor[_addr];
+        Checkpoint storage stakes = stakesFor[_user];
 
-        if (stakes.length == 0) {
-            return 0;
-        }
-
-        return stakes[stakes.length-1].amount;
+        return stakes.amount;
     }   
 
     //addr가 언제 마지막으로 스테이킹했는지 리턴해줌
     function lastStakedBlock(
-        address _addr
+        address _user
     )
         public
         view
@@ -112,14 +115,21 @@ contract L2StakingERC20 {
             uint256
         )
     {
-        Checkpoint[] storage stakes = stakesFor[_addr];
+        Checkpoint storage stakes = stakesFor[_user];
 
-        if (stakes.length == 0) {
-            return 0;
-        }
-
-        return stakes[stakes.length-1].at;
+        return stakes.at;
     }
 
+    function safeTonTransfer(
+        address _to, 
+        uint256 _amount
+    ) internal {
+        uint256 tonBal = ton.balanceOf(address(this));
+        if (_amount > tonBal) {
+            ton.transfer(_to, tonBal);
+        } else {
+            ton.transfer(_to, _amount);
+        }
+    }
 
 }
