@@ -2,6 +2,10 @@ const ethers = require('ethers')
 const { Watcher } = require('@eth-optimism/watcher')
 const { getContractFactory } = require('@eth-optimism/contracts')
 
+const {
+  time,
+} = require('@openzeppelin/test-helpers');
+
 const chai = require('chai');
 var expect = chai.expect;
 var assert = chai.assert;
@@ -51,85 +55,10 @@ const watcher = new Watcher({
   }
 })
 
-async function setup() {
-  const L1_ERC20 = await factory__L1_ERC20.connect(l1Wallet).deploy(
-    50000, //initialSupply
-    'L1 ERC20', //name
-  )
-  await L1_ERC20.deployTransaction.wait()
-
-  const L2_ERC20 = await factory__L2_ERC20.connect(l2Wallet).deploy(
-    l2MessengerAddress,
-    'L2 ERC20', //name
-    {
-      gasPrice: 0
-    }
-  )
-  await L2_ERC20.deployTransaction.wait()
-
-  const L2_Staking = await factory__L2_Staking.connect(l2Wallet).deploy(
-    L2_ERC20.address,
-    10,
-    {
-      gasPrice: 0    
-    }
-  )
-  await L2_Staking.deployTransaction.wait()
-
-  const L1_ERC20Gateway = await factory__L1_ERC20Gateway.connect(l1Wallet).deploy(
-    L1_ERC20.address,
-    L2_ERC20.address,
-    l1MessengerAddress
-  )
-  await L1_ERC20Gateway.deployTransaction.wait()
-  
-  const tx0 = await L2_ERC20.init(
-    L1_ERC20Gateway.address,
-    {
-      gasPrice: 0
-    }
-  )
-  await tx0.wait()
-
-  const tx1 = await L1_ERC20.approve(L1_ERC20Gateway.address, 50000)
-  await tx1.wait()
-
-  const tx2 = await L1_ERC20Gateway.deposit(50000)
-  await tx2.wait()
-
-  const [ msgHash1 ] = await watcher.getMessageHashesFromL1Tx(tx2.hash)
-  await watcher.getL2TransactionReceipt(msgHash1)
-  
-  const l2_transfer = await L2_ERC20.transfer(
-    l2Wallet2.address,
-    3000,
-    {
-      gasPrice: 0
-    }
-  )
-  await l2_transfer.wait()
-
-  const l2_transfer2 = await L2_ERC20.transfer(
-    L2_Staking.address,
-    40000,
-    {
-      gasPrice: 0
-    }
-  )
-  await l2_transfer2.wait()
-
-  console.log('--------------------------------')
-  console.log('basic setting on Layer2')
-  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 7000 
-  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000
-  console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40000 
-  console.log('--------------------------------')
-}
-
 describe("Layer2 Staking", function () {
   before(async function () {
-    this.timeout(1000000);
-    // await setup();
+    this.timeout(50000);
+
     this.l1_erc20 = await factory__L1_ERC20.connect(l1Wallet).deploy(
       50000, //initialSupply
       'L1 ERC20', //name
@@ -203,12 +132,12 @@ describe("Layer2 Staking", function () {
     console.log(`Balance on L2_staking: ${await this.l2_erc20.balanceOf(this.l2_staking.address)}`) // 40000 
     console.log('--------------------------------')
   })
-  
-  describe("deposit the ton", function() {
+
+  describe("staking test", function() {
     it("approve ton to stakingContract", async function () {
       const l2_stakeApprove = await this.l2_erc20.connect(l2Wallet).approve(
         this.l2_staking.address, 
-        1000,
+        100,
         {
           gasPrice: 0
         }
@@ -222,21 +151,23 @@ describe("Layer2 Staking", function () {
           gasPrice: 0
         }
       )
-      await expect(l2_allowance.toString()).to.be.equal('1000');
+      await expect(l2_allowance.toString()).to.be.equal('100');
     })
 
     it("approve and deposit test", async function () {
       const l2_stakeApprove = await this.l2_erc20.connect(l2Wallet).approve(
         this.l2_staking.address, 
-        1000,
+        100,
         {
           gasPrice: 0
         }
       )
       await l2_stakeApprove.wait()
+      const nowBlock = await this.l2_staking.getNowBlock()
+      console.log(nowBlock.toString())
 
       const l2_staking = await this.l2_staking.connect(l2Wallet).deposit(
-        1000,
+        100,
         {
           gasPrice: 0
         }
@@ -244,22 +175,133 @@ describe("Layer2 Staking", function () {
       await l2_staking.wait()
 
       let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
-      expect(stakingBalance.toString()).to.be.equal('41000')
+      expect(stakingBalance.toString()).to.be.equal('40100')
     })
-  })
 
-  describe("pendingTon", function() {
     it("calculate pendingAmount", async function () {
       const inputBlock = await this.l2_staking.getBlocknumber()
+      console.log(inputBlock.toString())
+      // await time.advanceBlockTo(inputBlock2)
       const nowBlock = await this.l2_staking.getNowBlock()
-      let calPendingAmount = (nowBlock-inputBlock) * 
-      const pendingAmount = await this.l2_staking.pendintTon(
+      console.log(nowBlock.toString())
+      let calPendingAmount = Number((nowBlock-inputBlock) * tokenPerBlock)
+      const pendingAmount = await this.l2_staking.pendingTon(
         l2Wallet.address,
         {
           gasPrice: 0
         }
       )
-      console.log(pendingAmount)
+      const numberAmount = pendingAmount.toString()
+      expect(Number(numberAmount)).to.be.equal(calPendingAmount)
+    })
+
+    it("one user withdraw", async function () {
+      const pendingAmount = await this.l2_staking.pendingTon(
+        l2Wallet.address,
+        {
+          gasPrice: 0
+        }
+      )
+      console.log(pendingAmount.toString())
+      const l2_staking = await this.l2_staking.connect(l2Wallet).withdraw(
+        100,
+        {
+          gasPrice: 0
+        }
+      )
+      await l2_staking.wait()
+      const nowBlock = await this.l2_staking.getNowBlock()
+      console.log(nowBlock.toString())
+      let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
+      console.log(stakingBalance.toString())
+      // expect(pendingAmount.toString()).to.be.equal(calPendingAmount)
     })
   })
+  
+  // describe("deposit the ton", function() {
+  //   it("approve ton to stakingContract", async function () {
+  //     const l2_stakeApprove = await this.l2_erc20.connect(l2Wallet).approve(
+  //       this.l2_staking.address, 
+  //       100,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     await l2_stakeApprove.wait()
+
+  //     const l2_allowance = await this.l2_erc20.connect(l2Wallet).allowance(
+  //       l2Wallet.address,
+  //       this.l2_staking.address,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     await expect(l2_allowance.toString()).to.be.equal('100');
+  //   })
+
+  //   it("approve and deposit test", async function () {
+  //     const l2_stakeApprove = await this.l2_erc20.connect(l2Wallet).approve(
+  //       this.l2_staking.address, 
+  //       100,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     await l2_stakeApprove.wait()
+  //     const nowBlock = await this.l2_staking.getNowBlock()
+  //     console.log(nowBlock.toString())
+
+  //     const l2_staking = await this.l2_staking.connect(l2Wallet).deposit(
+  //       100,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     await l2_staking.wait()
+
+  //     let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
+  //     expect(stakingBalance.toString()).to.be.equal('40100')
+  //   })
+  // })
+
+  // describe("pendingTon", function() {
+  //   it("calculate pendingAmount", async function () {
+  //     const inputBlock = await this.l2_staking.getBlocknumber()
+  //     // await time.advanceBlockTo(inputBlock2)
+  //     const nowBlock = await this.l2_staking.getNowBlock()
+  //     let calPendingAmount = Number((nowBlock-inputBlock) * tokenPerBlock)
+  //     const pendingAmount = await this.l2_staking.pendingTon(
+  //       l2Wallet.address,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     const numberAmount = pendingAmount.toString()
+  //     expect(Number(numberAmount)).to.be.equal(calPendingAmount)
+  //   })
+  // })
+
+  // describe("withdraw", function() {
+  //   it("one user withdraw", async function () {
+  //     // const pendingAmount = await this.l2_staking.pendingTon(
+  //     //   l2Wallet.address,
+  //     //   {
+  //     //     gasPrice: 0
+  //     //   }
+  //     // )
+  //     // console.log(pendingAmount.toString())
+  //     const l2_staking = await this.l2_staking.connect(l2Wallet).withdraw(
+  //       100,
+  //       {
+  //         gasPrice: 0
+  //       }
+  //     )
+  //     await l2_staking.wait()
+  //     const nowBlock = await this.l2_staking.getNowBlock()
+  //     console.log(nowBlock.toString())
+  //     let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
+  //     console.log(stakingBalance.toString())
+  //     // expect(pendingAmount.toString()).to.be.equal(calPendingAmount)
+  //   })
+  // })
 })

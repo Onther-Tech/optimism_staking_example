@@ -116,7 +116,7 @@ contract L2StakingERC20 {
         view
         returns (uint256)
     {
-        UserInfo storage user = userIn[msg.sender];
+        UserInfo storage user = userIn[_user];
         uint256 perShare = tonPerShare;
         if (block.number > lastRewardBlock && totalAmount != 0) {
             uint256 blockPriod = getBlockPeriod(lastRewardBlock, block.number);

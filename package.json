@@ -13,6 +13,7 @@
     "@eth-optimism/core-utils": "^0.2.1",
     "@eth-optimism/hardhat-ovm": "^0.0.2",
     "@nomiclabs/hardhat-ethers": "^2.0.1",
+    "@openzeppelin/test-helpers": "^0.5.12",
     "chai": "^4.3.4",
     "ethers": "^5.0.24",
     "hardhat": "^2.0.7",

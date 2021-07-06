@@ -13,7 +13,8 @@ module.exports = {
     optimism: {
       url: 'http://127.0.0.1:8545',
       accounts: {
-        mnemonic: 'test test test test test test test test test test test junk'
+        mnemonic: 'test test test test test test test test test test test junk',
+        accountsBalance: "10000000000000000000000"
       },
       // This sets the gas price to 0 for all transactions on L2. We do this
       // because account balances are not automatically initiated with an ETH

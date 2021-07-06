@@ -44,20 +44,80 @@ docker-compose up
 Now run the example file:
 
 ```sh
-npm test
+node example.js
 ```
 
 If everything goes well, you should see the following:
 
 ```text
-  Layer2 Staking
+Deploying L1 ERC20...
+Deploying L2 ERC20...
+Deploying L2 Staking...
+Deploying L1 ERC20 Gateway...
+Initializing L2 ERC20...
+Approving tokens for ERC20 gateway...(L1wallet1)
+Depositing tokens into L2 ERC20...(l1wallet1)
+Waiting for deposit to be relayed to L2...
+transfer token Layer2
 --------------------------------
 basic setting on Layer2
 Balance on L2: 7000
 Balance on L2_2: 3000
 Balance on L2_staking: 40000
 --------------------------------
-    deposit the ton
-      ✔ approve ton to stakingContract (128ms)
-      ✔ approve and deposit test (302ms)
+--------------------------------
+staking token Layer2
+--------------------------------
+Balance on L2: 6900
+Balance on L2_2: 3000
+Balance on L2_staking: 40100
+--------------------------------
+getBlocknumber Layer2
+--------------------------------
+lastReward:  526
+--------------------------------
+staking token Layer2
+--------------------------------
+Balance on L2: 6900
+Balance on L2_2: 2900
+Balance on L2_staking: 40200
+--------------------------------
+getBlocknumber Layer2
+--------------------------------
+lastReward2:  531
+trashlog:  397
+trashlog2:  398
+--------------------------------
+getBlocknumber Layer2
+--------------------------------
+lastReward3:  531
+--------------------------------
+getNowBlock Layer2
+--------------------------------
+now block:  531
+--------------------------------
+pendingTon Layer2
+--------------------------------
+50
+--------------------------------
+Balance on L2: 6900
+Balance on L2_2: 2900
+Balance on L2_staking: 40200
+--------------------------------
+--------------------------------
+unstaking token Layer2
+--------------------------------
+--------------------------------
+Balance on L2: 7050
+Balance on L2_2: 2900
+Balance on L2_staking: 40050
+--------------------------------
+--------------------------------
+getBlocknumber Layer2
+--------------------------------
+lastReward4:  531
+--------------------------------
+getNowBlock2 Layer2
+--------------------------------
+now block:  531
 ```
