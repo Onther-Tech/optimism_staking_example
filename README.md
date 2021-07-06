@@ -6,7 +6,9 @@ Staking 기능을 넣기 위해서 L2StakingERC20.sol에 컨트랙트를 추가
 
 L2StakingERC20에 staking reward 토큰을 넣어서 보상을 줌
 
-block당 reward를 정하여서 user들이 원하면 언제든 보상을 가져갈 수 있음
+block당 reward를 정하여서 user들이 deposit 하거나 withdraw시 보상이 지급
+
+pendingTon함수를 통해서 얼마받을 수 있는지 확인가능함
 
 
 
@@ -42,25 +44,20 @@ docker-compose up
 Now run the example file:
 
 ```sh
-node ./example.js
+npm test
 ```
 
 If everything goes well, you should see the following:
 
 ```text
-Deploying L1 ERC20...
-Deploying L2 ERC20...
-Deploying L1 ERC20 Gateway...
-Initializing L2 ERC20...
-Balance on L1: 1234
-Balance on L2: 0
-Approving tokens for ERC20 gateway...
-Depositing tokens into L2 ERC20...
-Waiting for deposit to be relayed to L2...
-Balance on L1: 0
-Balance on L2: 1234
-Withdrawing tokens back to L1 ERC20...
-Waiting for withdrawal to be relayed to L1...
-Balance on L1: 1234
-Balance on L2: 0
+  Layer2 Staking
+--------------------------------
+basic setting on Layer2
+Balance on L2: 7000
+Balance on L2_2: 3000
+Balance on L2_staking: 40000
+--------------------------------
+    deposit the ton
+      ✔ approve ton to stakingContract (128ms)
+      ✔ approve and deposit test (302ms)
 ```
