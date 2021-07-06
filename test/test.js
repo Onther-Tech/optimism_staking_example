@@ -64,6 +64,7 @@ describe("Layer2 Staking", function () {
       'L1 ERC20', //name
     )
     // console.log(this.l1_erc20.address)
+    console.log("deploy the l1_erc20")
 
     this.l2_erc20 = await factory__L2_ERC20.connect(l2Wallet).deploy(
       l2MessengerAddress,
@@ -73,6 +74,8 @@ describe("Layer2 Staking", function () {
       }
     )
     // console.log(this.l2_erc20.address)
+    console.log("deploy the l2_erc20")
+
 
     this.l2_staking = await factory__L2_Staking.connect(l2Wallet).deploy(
       this.l2_erc20.address,

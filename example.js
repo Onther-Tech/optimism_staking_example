@@ -167,9 +167,16 @@ async function main() {
   )
   await l2_stakeApprove2.wait()
 
+  const l2_getBlocknumber0 = await L2_Staking.getBlocknumber(
+    {
+      gasPrice: 0
+    }
+  )
+  console.log("lastRewardBlockNumber: ",l2_getBlocknumber0.toString())
+
   console.log('--------------------------------')
   console.log('staking token Layer2')
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   const l2_staking = await L2_Staking.connect(l2Wallet).deposit(
     100,
     {
@@ -182,15 +189,12 @@ async function main() {
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40100
   // console.log("log: ",log.blockNumber)
 
-  console.log('--------------------------------')
-  console.log('getBlocknumber Layer2')
-  console.log('--------------------------------')
   const l2_getBlocknumber = await L2_Staking.getBlocknumber(
     {
       gasPrice: 0
     }
   )
-  console.log("lastReward: ",l2_getBlocknumber.toString())
+  console.log("lastRewardBlockNumber: ",l2_getBlocknumber.toString())
  
   // let nextBlock = log.blockNumber + 10
   // console.log(nextBlock)
@@ -203,7 +207,7 @@ async function main() {
 
   console.log('--------------------------------')
   console.log('staking token Layer2')
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   const l2_staking2 = await L2_Staking.connect(l2Wallet2).deposit(
     100,
     {
@@ -216,15 +220,15 @@ async function main() {
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40200
   // console.log("log2: ",log2.blockNumber)
 
-  console.log('--------------------------------')
-  console.log('getBlocknumber Layer2')
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
+  // console.log('getBlocknumber Layer2')
+  // console.log('--------------------------------')
   const l2_getBlocknumber2 = await L2_Staking.getBlocknumber(
     {
       gasPrice: 0
     }
   )
-  console.log("lastReward2: ",l2_getBlocknumber2.toString())
+  console.log("lastRewardBlockNumber: ",l2_getBlocknumber2.toString())
 
   const l2_trash = await L2_ERC20.transfer(
     l2Wallet2.address,
@@ -234,7 +238,7 @@ async function main() {
     }
   )
   let trashlog = await l2_trash.wait()
-  console.log("trashlog: ",trashlog.blockNumber)
+  // console.log("trashlog: ",trashlog.blockNumber)
 
 
   const l2_trash2 = await L2_ERC20.connect(l2Wallet2).transfer(
@@ -245,31 +249,11 @@ async function main() {
     }
   )
   let trashlog2 = await l2_trash2.wait()
-  console.log("trashlog2: ",trashlog2.blockNumber)
-
-  console.log('--------------------------------')
-  console.log('getBlocknumber Layer2')
-  console.log('--------------------------------')
-  const l2_getBlocknumber3 = await L2_Staking.connect(l2Wallet).getBlocknumber(
-    {
-      gasPrice: 0
-    }
-  )
-  console.log("lastReward3: ",l2_getBlocknumber3.toString())
-
-  console.log('--------------------------------')
-  console.log('getNowBlock Layer2')
-  console.log('--------------------------------')
-  const l2_getNowBlock = await L2_Staking.connect(l2Wallet).getNowBlock(
-    {
-      gasPrice: 0
-    }
-  )
-  console.log("now block: ",l2_getNowBlock.toString())
+  // console.log("trashlog2: ",trashlog2.blockNumber)
 
   console.log('--------------------------------')
   console.log('pendingTon Layer2')
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   const l2_pendingTon = await L2_Staking.pendingTon(
     l2Wallet.address,
     {
@@ -278,7 +262,7 @@ async function main() {
   )
   console.log(l2_pendingTon.toString())
 
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 6900
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 2900 
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40200
@@ -286,7 +270,7 @@ async function main() {
 
   console.log('--------------------------------')
   console.log('unstaking token Layer2')
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   const l2_unstaking = await L2_Staking.connect(l2Wallet).withdraw(
     100,
     {
@@ -295,33 +279,34 @@ async function main() {
   )
   let log3 = await l2_unstaking.wait()
 
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 7000
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 2900 
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40100
   console.log('--------------------------------')
   // console.log("log3: ", log3.blockNumber)
 
-  console.log('--------------------------------')
-  console.log('getBlocknumber Layer2')
-  console.log('--------------------------------')
-  const l2_getBlocknumber4 = await L2_Staking.getBlocknumber(
+  // console.log('--------------------------------')
+  // console.log('getBlocknumber Layer2')
+  // console.log('--------------------------------')
+  const l2_getBlocknumber3 = await L2_Staking.connect(l2Wallet).getBlocknumber(
     {
       gasPrice: 0
     }
   )
-  console.log("lastReward4: ",l2_getBlocknumber4.toString())
+  console.log("getBlocknumber: ",l2_getBlocknumber3.toString())
 
 
-  console.log('--------------------------------')
-  console.log('getNowBlock2 Layer2')
-  console.log('--------------------------------')
-  const l2_getNowBlock2 = await L2_Staking.getNowBlock(
+  // console.log('--------------------------------')
+  // console.log('getNowBlock Layer2')
+  // console.log('--------------------------------')
+  const l2_getNowBlock = await L2_Staking.connect(l2Wallet).getNowBlock(
     {
       gasPrice: 0
     }
   )
-  console.log("now block: ",l2_getNowBlock2.toString())
+  console.log("now block: ",l2_getNowBlock.toString())
+
 
 
 
