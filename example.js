@@ -55,6 +55,8 @@ async function main() {
     }
   })
 
+  const tokenPerBlock = 10;
+
   // Deploy an ERC20 token on L1.
   console.log('Deploying L1 ERC20...')
   const L1_ERC20 = await factory__L1_ERC20.connect(l1Wallet).deploy(
@@ -193,7 +195,8 @@ async function main() {
       gasPrice: 0
     }
   )
-  console.log("lastRewardBlockNumber: ",l2_getBlocknumber.toString())
+  let firstBlockNumber = Number(l2_getBlocknumber.toString())
+  console.log("lastRewardBlockNumber: ",firstBlockNumber)
   
   sleep(30000);
   // let nextBlock = log.blockNumber + 10
@@ -257,10 +260,12 @@ async function main() {
       gasPrice: 0
     }
   )
+  let seceondBlockNumber = Number(l2_getBlocknumber3.toString())
+
   console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 7000
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 2900 
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40100
-  console.log("getBlocknumber: ",l2_getBlocknumber3.toString())
+  console.log("getBlocknumber: ",seceondBlockNumber)
   console.log('--------------------------------')
   // console.log("log3: ", log3.blockNumber)
 
@@ -280,7 +285,9 @@ async function main() {
   )
   console.log('pendingTon Layer2 from wallet1 : ', l2_pendingTon.toString())
   console.log('--------------------------------')
-
+  
+  let calculReward = (seceondBlockNumber - firstBlockNumber) * tokenPerBlock;
+  console.log("allReward : ", calculReward)
 
 
   // // Burn the tokens on L2 and ask the L1 contract to unlock on our behalf.
@@ -293,29 +300,30 @@ async function main() {
   // )
   // await tx3.wait()
   
-  // console.log(`Withdrawing2 tokens back to L1 ERC20...`)
-  // const tx4 = await L2_ERC20.connect(l2Wallet2).withdraw(
-  //   2000,
-  //   {
-  //     gasPrice: 0
-  //   }
-  // )
-  // await tx4.wait()
+  console.log('----------------------------------------------')
+  console.log(`Withdrawing2 tokens back to L1 ERC20...`)
+  const tx4 = await L2_ERC20.connect(l2Wallet2).withdraw(
+    2000,
+    {
+      gasPrice: 0
+    }
+  )
+  await tx4.wait()
 
   // // Wait for the message to be relayed to L1.
   // console.log(`Waiting for withdrawal to be relayed to L1...`)
   // const [ msgHash2 ] = await watcher.getMessageHashesFromL2Tx(tx3.hash)
   // await watcher.getL1TransactionReceipt(msgHash2)
 
-  // console.log(`Waiting for withdrawal2 to be relayed to L1...`)
-  // const [ msgHash2_2 ] = await watcher.getMessageHashesFromL2Tx(tx4.hash)
-  // await watcher.getL1TransactionReceipt(msgHash2_2)
+  console.log(`Waiting for withdrawal2 to be relayed to L1...`)
+  const [ msgHash2_2 ] = await watcher.getMessageHashesFromL2Tx(tx4.hash)
+  await watcher.getL1TransactionReceipt(msgHash2_2)
 
-  // // Log balances again!
-  // console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 2000
-  // console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l1Wallet.address)}`) // 0
-  // console.log(`Balance on L1_2: ${await L1_ERC20.balanceOf(l1Wallet2.address)}`) // 2000
-  // console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l1Wallet2.address)}`) // 1000
+  // Log balances again!
+  console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 2000
+  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l1Wallet.address)}`) // 0
+  console.log(`Balance on L1_2: ${await L1_ERC20.balanceOf(l1Wallet2.address)}`) // 2000
+  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l1Wallet2.address)}`) // 1000
 }
 
 function sleep(ms) {

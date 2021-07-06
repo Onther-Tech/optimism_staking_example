@@ -71,25 +71,30 @@ deposit 100 token Layer2 from wallet1
 Balance on L2: 6900
 Balance on L2_2: 3000
 Balance on L2_staking: 40100
-lastRewardBlockNumber:  80
+lastRewardBlockNumber:  128
 --------------------------------
 deposit 100 token Layer2 from wallet2
 Balance on L2: 6900
 Balance on L2_2: 2900
 Balance on L2_staking: 40200
-lastRewardBlockNumber:  82
---------------------------------
-pendingTon Layer2:  20
-Balance on L2: 6900
-Balance on L2_2: 2900
-Balance on L2_staking: 40200
---------------------------------
+lastRewardBlockNumber:  134
 --------------------------------
 withdraw 100 token Layer2 from wallet1
-Balance on L2: 7030
-Balance on L2_2: 2900
-Balance on L2_staking: 40070
+Balance on L2: 6900
+Balance on L2_2: 3020
+Balance on L2_staking: 40080
+getBlocknumber:  138
 --------------------------------
-getBlocknumber:  84
-now block:  84
+now block:  138
+--------------------------------
+pendingTon Layer2 from wallet1 :  80
+--------------------------------
+allReward :  100
+----------------------------------------------
+Withdrawing2 tokens back to L1 ERC20...
+Waiting for withdrawal2 to be relayed to L1...
+Balance on L1: 0
+Balance on L2: 6900
+Balance on L1_2: 2000
+Balance on L2_2: 1020
 ```
