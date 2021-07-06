@@ -13,14 +13,17 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract L2StakingERC20 {
     using SafeMath for uint256;
 
-    struct Checkpoint {
-        uint256 at;
+    struct UserInfo {
         uint256 amount;
+        uint256 rewardDebt;
     }
 
     IERC20 public ton;
 
-    mapping (address => Checkpoint) public stakesFor;
+    mapping (address => UserInfo) public userIn;
+
+    uint256 tonPerShare = 0;
+    uint256 lastRewardBlock;
 
     uint256 totalAmount = 0;
 
@@ -35,91 +38,95 @@ contract L2StakingERC20 {
         ton = IERC20(_ton);
         tokenPerBlock = _tokenPerBlock;
     }
-    
-    function stake(
-        uint256 _amount
+
+    function getBlockPeriod(
+        uint256 _from,
+        uint256 _to
     ) 
-        external
-    {
-        updateCheckpoint(msg.sender, _amount, false);
-
-        require(ton.transferFrom(msg.sender, address(this), _amount), "stake transfer fail");    
-    }
-
-
-    function updateCheckpoint(
-        address _user,
-        uint256 amount,
-        bool isUnstake
-    )
-        internal
-    {
-        Checkpoint storage check = stakesFor[_user];
-        check.at = block.number;
-
-        if (isUnstake) {
-            check.amount = check.amount - amount;
-            totalAmount = totalAmount - amount;
-        } else {
-            check.amount = check.amount + amount;
-            totalAmount = totalAmount + amount;
-        }
-
-    }
-
-    function unstake(
-        uint256 _amount
-    )
-        external 
-    {
-        require(totalStakedFor(msg.sender) >= _amount, "lack the staking amount");
-
-        updateCheckpoint(msg.sender, _amount, true);
-        
-        // transfer(msg.sender, _amount);
-        require(ton.transfer(msg.sender, _amount), "unstake transfer fail");
-    }
-
-    function claim() external {
-        Checkpoint storage check = stakesFor[msg.sender];
-
-        require(totalStakedFor(msg.sender) > 0, "lack the staking amount");
-        uint256 reward = ((block.number).sub(check.at)).mul(tokenPerBlock).mul(check.amount).div(totalAmount);       
-        check.at = block.number;
-
-        require(ton.transfer(msg.sender, reward), "claim transfer fail");
-    }
-
-    //addr가 얼만큼 스테이킹했는지 리턴해줌
-    function totalStakedFor(
-        address _user
-    )
-        public 
-        view
-        returns (
-            uint256
-        )
-    {
-        Checkpoint storage stakes = stakesFor[_user];
-
-        return stakes.amount;
-    }   
-
-    //addr가 언제 마지막으로 스테이킹했는지 리턴해줌
-    function lastStakedBlock(
-        address _user
-    )
         public
         view
-        returns (
-            uint256
-        )
+        returns (uint256)
     {
-        Checkpoint storage stakes = stakesFor[_user];
-
-        return stakes.at;
+        return _to.sub(_from);
     }
 
+    function updateReward() public {
+        if(block.number <= lastRewardBlock) {
+            return;
+        }
+        if (totalAmount == 0) {
+            lastRewardBlock = block.number;
+            return;
+        }
+        uint256 blockPriod = getBlockPeriod(lastRewardBlock, block.number);
+        uint256 tonReward = blockPriod.mul(tokenPerBlock);
+        tonPerShare = tonPerShare.add(tonReward.mul(10000).div(totalAmount));
+        lastRewardBlock = block.number;
+    }
+
+    function getBlocknumber() 
+        external
+        view
+        returns (uint256)
+    {      
+        return lastRewardBlock;
+    }
+
+    function getNowBlock() external view returns (uint256){
+        return block.number;
+    }
+
+    function deposit(
+        uint256 _amount
+    )
+        public
+    {   
+        UserInfo storage user = userIn[msg.sender];
+        updateReward();
+        if (user.amount > 0) {
+            uint256 pending = user.amount.mul(tonPerShare).div(10000).sub(user.rewardDebt);
+            safeTonTransfer(msg.sender, pending);
+        }
+        require(ton.transferFrom(msg.sender, address(this), _amount), "Deposit transferFrom fail");
+        user.amount = user.amount.add(_amount);
+        user.rewardDebt = user.amount.mul(tonPerShare).div(10000);
+        totalAmount = totalAmount.add(_amount);
+    }
+
+    function withdraw(
+        uint256 _amount
+    )
+        public
+    {
+        UserInfo storage user = userIn[msg.sender];
+        require(user.amount >= _amount, "withdraw: don't have deposit amount");
+        updateReward();
+        uint256 pending = user.amount.mul(tonPerShare).div(10000).sub(user.rewardDebt);
+        safeTonTransfer(msg.sender, pending);
+        user.amount = user.amount.sub(_amount);
+        user.rewardDebt = user.amount.mul(tonPerShare).div(10000);
+        totalAmount = totalAmount.sub(_amount);
+        require(ton.transfer(msg.sender, _amount), "Withdraw transfer fail");
+    }
+
+    function pendingTon(
+        address _user
+    )
+        external
+        view
+        returns (uint256)
+    {
+        UserInfo storage user = userIn[msg.sender];
+        uint256 perShare = tonPerShare;
+        if (block.number > lastRewardBlock && totalAmount != 0) {
+            uint256 blockPriod = getBlockPeriod(lastRewardBlock, block.number);
+            uint256 tonReward = blockPriod.mul(tokenPerBlock);
+            perShare = perShare.add(tonReward.mul(10000).div(totalAmount));
+        }
+        return user.amount.mul(perShare).div(10000).sub(user.rewardDebt);
+    }
+
+    
     function safeTonTransfer(
         address _to, 
         uint256 _amount
