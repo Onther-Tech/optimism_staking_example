@@ -156,7 +156,7 @@ async function main() {
   console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 3000
   console.log(`Balance on L2_staking: ${await L2_ERC20.balanceOf(L2_Staking.address)}`) // 40000 
   console.log("lastRewardBlockNumber: ",l2_getBlocknumber0.toString())
-  console.log('--------------------------------')
+  // console.log('--------------------------------')
   
   const l2_stakeApprove = await L2_ERC20.connect(l2Wallet).approve(
     L2_Staking.address, 
@@ -299,7 +299,7 @@ async function main() {
   //   }
   // )
   // await tx3.wait()
-  
+
   console.log('----------------------------------------------')
   console.log(`Withdrawing2 tokens back to L1 ERC20...`)
   const tx4 = await L2_ERC20.connect(l2Wallet2).withdraw(

@@ -55,6 +55,11 @@ const watcher = new Watcher({
   }
 })
 
+function sleep(ms) {
+  const wakeUpTime = Date.now() + ms;
+  while (Date.now() < wakeUpTime) {}
+}
+
 describe("Layer2 Staking", function () {
   before(async function () {
     this.timeout(50000);
@@ -63,7 +68,6 @@ describe("Layer2 Staking", function () {
       50000, //initialSupply
       'L1 ERC20', //name
     )
-    // console.log(this.l1_erc20.address)
     console.log("deploy the l1_erc20")
 
     this.l2_erc20 = await factory__L2_ERC20.connect(l2Wallet).deploy(
@@ -73,7 +77,6 @@ describe("Layer2 Staking", function () {
         gasPrice: 0
       }
     )
-    // console.log(this.l2_erc20.address)
     console.log("deploy the l2_erc20")
 
 
@@ -84,14 +87,14 @@ describe("Layer2 Staking", function () {
         gasPrice: 0    
       }
     )
-    // console.log(this.l2_staking.address)
+    console.log("deploy the l2_staking")
   
     this.l1_erc20gateway = await factory__L1_ERC20Gateway.connect(l1Wallet).deploy(
       this.l1_erc20.address,
       this.l2_erc20.address,
       l1MessengerAddress
     )
-    // console.log(this.l1_erc20gateway.address)
+    console.log("deploy the l1_erc20gateway")
     
     const tx0 = await this.l2_erc20.init(
       this.l1_erc20gateway.address,      
@@ -166,9 +169,7 @@ describe("Layer2 Staking", function () {
         }
       )
       await l2_stakeApprove.wait()
-      const nowBlock = await this.l2_staking.getNowBlock()
-      console.log(nowBlock.toString())
-
+ 
       const l2_staking = await this.l2_staking.connect(l2Wallet).deposit(
         100,
         {
@@ -177,47 +178,106 @@ describe("Layer2 Staking", function () {
       )
       await l2_staking.wait()
 
+      const inputBlock1 = await this.l2_staking.getBlocknumber()
+      let numberInput1 = Number(inputBlock1.toString())
+      console.log("inputBlock : ",numberInput1)
+
       let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
       expect(stakingBalance.toString()).to.be.equal('40100')
     })
 
     it("calculate pendingAmount", async function () {
+      this.timeout(50000);
       const inputBlock = await this.l2_staking.getBlocknumber()
-      console.log(inputBlock.toString())
-      // await time.advanceBlockTo(inputBlock2)
+      let numberInput = Number(inputBlock.toString())
+      // console.log("inputBlock : ",numberInput)
+      sleep(30000)
       const nowBlock = await this.l2_staking.getNowBlock()
-      console.log(nowBlock.toString())
-      let calPendingAmount = Number((nowBlock-inputBlock) * tokenPerBlock)
+      let numberNow = Number(nowBlock.toString())
+      // console.log("nowBlock : ", numberNow)
+      let calPendingAmount = ((numberNow-numberInput) * tokenPerBlock)
+      // console.log("calPendingAmount :", calPendingAmount)
       const pendingAmount = await this.l2_staking.pendingTon(
         l2Wallet.address,
         {
           gasPrice: 0
         }
       )
-      const numberAmount = pendingAmount.toString()
-      expect(Number(numberAmount)).to.be.equal(calPendingAmount)
+      const numberAmount = Number(pendingAmount.toString())
+      // console.log("numberAmount :", numberAmount)
+      expect(numberAmount).to.be.equal(calPendingAmount)
     })
 
-    it("one user withdraw", async function () {
-      const pendingAmount = await this.l2_staking.pendingTon(
-        l2Wallet.address,
-        {
-          gasPrice: 0
-        }
-      )
-      console.log(pendingAmount.toString())
-      const l2_staking = await this.l2_staking.connect(l2Wallet).withdraw(
+    it("one user deposit and withdraw", async function () {
+      this.timeout(50000);
+      const l2_stakeApprove = await this.l2_erc20.connect(l2Wallet2).approve(
+        this.l2_staking.address, 
         100,
         {
           gasPrice: 0
         }
       )
-      await l2_staking.wait()
+      await l2_stakeApprove.wait()
+ 
+      const l2_deposit = await this.l2_staking.connect(l2Wallet2).deposit(
+        100,
+        {
+          gasPrice: 0
+        }
+      )
+      await l2_deposit.wait()
+      const inputBlock = await this.l2_staking.getBlocknumber()
+      let inputNumber = Number(inputBlock.toString())
+      console.log("inputBlock : ", inputNumber)
+      
+      sleep(30000)
+
+      const l2_withdraw = await this.l2_staking.connect(l2Wallet2).withdraw(
+        100,
+        {
+          gasPrice: 0
+        }
+      )
+      await l2_withdraw.wait()
+      // const inputBlock3 = await this.l2_staking.getBlocknumber()
+      // console.log("inputBlock3 : ",inputBlock3.toString())
+
       const nowBlock = await this.l2_staking.getNowBlock()
-      console.log(nowBlock.toString())
-      let stakingBalance = await this.l2_erc20.balanceOf(this.l2_staking.address)
-      console.log(stakingBalance.toString())
-      // expect(pendingAmount.toString()).to.be.equal(calPendingAmount)
+      let nowNumber = Number(nowBlock.toString())
+      console.log("nowBlock : ", nowNumber)
+
+      const calculReward = (nowNumber - inputNumber) * tokenPerBlock * (1/2)
+      // console.log("calculReward : ", calculReward)
+
+      const pendingAmount = await this.l2_staking.pendingTon(
+        l2Wallet.address,
+        {
+          gasPrice: 0
+        }
+      )
+      const numberAmount = Number(pendingAmount.toString())
+      console.log("numberAmount from Wallet1:", numberAmount)
+
+      
+      let l2wallet2Balance = await this.l2_erc20.balanceOf(l2Wallet2.address)
+      let l2Wallet2Number = Number(l2wallet2Balance.toString())
+      console.log("l2wallet2Balance : ", (l2Wallet2Number-3000))
+      
+      expect(calculReward).to.be.equal((l2Wallet2Number-3000))
+      
+      const l2_withdraw2 = await this.l2_staking.connect(l2Wallet).withdraw(
+        100,
+        {
+          gasPrice: 0
+        }
+      )
+      await l2_withdraw2.wait()
+        
+      let l2walletBalance = await this.l2_erc20.balanceOf(l2Wallet.address)
+      let l2WalletNumber = Number(l2walletBalance.toString())
+      console.log("l2walletBalance : ", (l2WalletNumber-7000))
+
+      expect(numberAmount).to.be.equal((l2WalletNumber-7000))
     })
   })
   

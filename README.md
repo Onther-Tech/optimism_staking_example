@@ -66,7 +66,6 @@ Balance on L2_2: 3000
 Balance on L2_staking: 40000
 lastRewardBlockNumber:  0
 --------------------------------
---------------------------------
 deposit 100 token Layer2 from wallet1
 Balance on L2: 6900
 Balance on L2_2: 3000
