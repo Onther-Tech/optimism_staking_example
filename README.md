@@ -64,60 +64,32 @@ basic setting on Layer2
 Balance on L2: 7000
 Balance on L2_2: 3000
 Balance on L2_staking: 40000
+lastRewardBlockNumber:  0
 --------------------------------
 --------------------------------
-staking token Layer2
---------------------------------
+deposit 100 token Layer2 from wallet1
 Balance on L2: 6900
 Balance on L2_2: 3000
 Balance on L2_staking: 40100
+lastRewardBlockNumber:  80
 --------------------------------
-getBlocknumber Layer2
---------------------------------
-lastReward:  526
---------------------------------
-staking token Layer2
---------------------------------
+deposit 100 token Layer2 from wallet2
 Balance on L2: 6900
 Balance on L2_2: 2900
 Balance on L2_staking: 40200
+lastRewardBlockNumber:  82
 --------------------------------
-getBlocknumber Layer2
---------------------------------
-lastReward2:  531
-trashlog:  397
-trashlog2:  398
---------------------------------
-getBlocknumber Layer2
---------------------------------
-lastReward3:  531
---------------------------------
-getNowBlock Layer2
---------------------------------
-now block:  531
---------------------------------
-pendingTon Layer2
---------------------------------
-50
---------------------------------
+pendingTon Layer2:  20
 Balance on L2: 6900
 Balance on L2_2: 2900
 Balance on L2_staking: 40200
 --------------------------------
 --------------------------------
-unstaking token Layer2
---------------------------------
---------------------------------
-Balance on L2: 7050
+withdraw 100 token Layer2 from wallet1
+Balance on L2: 7030
 Balance on L2_2: 2900
-Balance on L2_staking: 40050
+Balance on L2_staking: 40070
 --------------------------------
---------------------------------
-getBlocknumber Layer2
---------------------------------
-lastReward4:  531
---------------------------------
-getNowBlock2 Layer2
---------------------------------
-now block:  531
+getBlocknumber:  84
+now block:  84
 ```
