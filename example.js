@@ -38,6 +38,10 @@ async function main() {
   const l1Wallet2 = new ethers.Wallet(key2, l1RpcProvider)
   const l2Wallet2 = new ethers.Wallet(key2, l2RpcProvider)
 
+  const key3 = '0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
+  const l1Waalet3 = new ethers.Wallet(key3, l1RpcProvider)
+  const l2Wallet3 = new ethers.Wallet(key3, l2RpcProvider)
+
   // L1 messenger address depends on the deployment, this is default for our local deployment.
   const l1MessengerAddress = '0x59b670e9fA9D0A427751Af201D676719a970857b'
   // L2 messenger address is always the same.
@@ -320,10 +324,10 @@ async function main() {
   await watcher.getL1TransactionReceipt(msgHash2_2)
 
   // Log balances again!
-  console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 2000
-  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l1Wallet.address)}`) // 0
+  console.log(`Balance on L1: ${await L1_ERC20.balanceOf(l1Wallet.address)}`) // 0
+  console.log(`Balance on L2: ${await L2_ERC20.balanceOf(l2Wallet.address)}`) // 6900
   console.log(`Balance on L1_2: ${await L1_ERC20.balanceOf(l1Wallet2.address)}`) // 2000
-  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l1Wallet2.address)}`) // 1000
+  console.log(`Balance on L2_2: ${await L2_ERC20.balanceOf(l2Wallet2.address)}`) // 1000
 }
 
 function sleep(ms) {

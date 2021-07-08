@@ -109,6 +109,18 @@ contract L2StakingERC20 {
         require(ton.transfer(msg.sender, _amount), "Withdraw transfer fail");
     }
 
+    function claim() external {
+        UserInfo storage user = userIn[msg.sender];
+        require(user.amount > 0, "claim: user don't have deposit amount");
+        uint256 tonShare = tonPerShare;
+        uint256 blockPeriod = getBlockPeriod(lastRewardBlock, block.number);
+        uint256 tonReward = blockPeriod.mul(tokenPerBlock);
+        tonShare = tonShare.add(tonReward.mul(10000).div(totalAmount));
+        uint256 pending = user.amount.mul(tonShare).div(10000).sub(user.rewardDebt);
+        user.rewardDebt = user.rewardDebt.add(pending);
+        require(safeTonTransfer(msg.sender, pending), "failed to reawrd transfer");
+    }
+
     function pendingTon(
         address _user
     )
