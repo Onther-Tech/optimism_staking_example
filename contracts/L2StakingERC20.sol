@@ -118,7 +118,7 @@ contract L2StakingERC20 {
         tonShare = tonShare.add(tonReward.mul(10000).div(totalAmount));
         uint256 pending = user.amount.mul(tonShare).div(10000).sub(user.rewardDebt);
         user.rewardDebt = user.rewardDebt.add(pending);
-        require(safeTonTransfer(msg.sender, pending), "failed to reawrd transfer");
+        safeTonTransfer(msg.sender, pending);
     }
 
     function pendingTon(
