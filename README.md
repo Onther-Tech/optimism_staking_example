@@ -44,56 +44,44 @@ docker-compose up
 Now run the example file:
 
 ```sh
-node example.js
+npx hardhat test
 ```
 
 If everything goes well, you should see the following:
 
 ```text
+  Layer2 Staking
+    staking test1
 Deploying L1 ERC20...
 Deploying L2 ERC20...
 Deploying L2 Staking...
 Deploying L1 ERC20 Gateway...
-Initializing L2 ERC20...
-Approving tokens for ERC20 gateway...(L1wallet1)
-Depositing tokens into L2 ERC20...(l1wallet1)
-Waiting for deposit to be relayed to L2...
-transfer token Layer2
 --------------------------------
 basic setting on Layer2
-Balance on L2: 7000
+Balance on L2: 3000
 Balance on L2_2: 3000
+Balance on L2_3: 3000
 Balance on L2_staking: 40000
-lastRewardBlockNumber:  0
 --------------------------------
-deposit 100 token Layer2 from wallet1
-Balance on L2: 6900
+      ✓ approve ton to stakingContract (145ms)
+      ✓ approve and deposit test (301ms)
+      ✓ calculate pendingAmount (30042ms)
+      ✓ one user deposit and withdraw (30855ms)
+    staking test2
+Deploying L1 ERC20...
+Deploying L2 ERC20...
+Deploying L2 Staking...
+Deploying L1 ERC20 Gateway...
+--------------------------------
+basic setting on Layer2
+Balance on L2: 3000
 Balance on L2_2: 3000
-Balance on L2_staking: 40100
-lastRewardBlockNumber:  128
+Balance on L2_3: 3000
+Balance on L2_staking: 40000
 --------------------------------
-deposit 100 token Layer2 from wallet2
-Balance on L2: 6900
-Balance on L2_2: 2900
-Balance on L2_staking: 40200
-lastRewardBlockNumber:  134
---------------------------------
-withdraw 100 token Layer2 from wallet1
-Balance on L2: 6900
-Balance on L2_2: 3020
-Balance on L2_staking: 40080
-getBlocknumber:  138
---------------------------------
-now block:  138
---------------------------------
-pendingTon Layer2 from wallet1 :  80
---------------------------------
-allReward :  100
-----------------------------------------------
-Withdrawing2 tokens back to L1 ERC20...
-Waiting for withdrawal2 to be relayed to L1...
-Balance on L1: 0
-Balance on L2: 6900
-Balance on L1_2: 2000
-Balance on L2_2: 1020
+      ✓ wallet1, wallet2 Deposit and withdraw (95149ms)
+
+
+  5 passing (3m)
+
 ```

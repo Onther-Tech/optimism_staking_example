@@ -73,7 +73,7 @@ describe("Layer2 Staking", function () {
         50000, //initialSupply
         'L1 ERC20', //name
       )
-      console.log("deploy the l1_erc20")
+      console.log("Deploying L1 ERC20...")
 
       this.l2_erc20 = await factory__L2_ERC20.connect(l2Wallet).deploy(
         l2MessengerAddress,
@@ -82,7 +82,7 @@ describe("Layer2 Staking", function () {
           gasPrice: 0
         }
       )
-      console.log("deploy the l2_erc20")
+      console.log("Deploying L2 ERC20...")
 
 
       this.l2_staking = await factory__L2_Staking.connect(l2Wallet).deploy(
@@ -92,14 +92,14 @@ describe("Layer2 Staking", function () {
           gasPrice: 0    
         }
       )
-      console.log("deploy the l2_staking")
+      console.log("Deploying L2 Staking...")
     
       this.l1_erc20gateway = await factory__L1_ERC20Gateway.connect(l1Wallet).deploy(
         this.l1_erc20.address,
         this.l2_erc20.address,
         l1MessengerAddress
       )
-      console.log("deploy the l1_erc20gateway")
+      console.log("Deploying L1 ERC20 Gateway...")
 
       const tx0 = await this.l2_erc20.init(
         this.l1_erc20gateway.address,      
@@ -303,7 +303,7 @@ describe("Layer2 Staking", function () {
         50000, //initialSupply
         'L1 ERC20', //name
       )
-      console.log("deploy the l1_erc20")
+      console.log("Deploying L1 ERC20...")
 
       this.l2_erc20 = await factory__L2_ERC20.connect(l2Wallet).deploy(
         l2MessengerAddress,
@@ -312,7 +312,7 @@ describe("Layer2 Staking", function () {
           gasPrice: 0
         }
       )
-      console.log("deploy the l2_erc20")
+      console.log("Deploying L2 ERC20...")
 
 
       this.l2_staking = await factory__L2_Staking.connect(l2Wallet).deploy(
@@ -322,14 +322,14 @@ describe("Layer2 Staking", function () {
           gasPrice: 0    
         }
       )
-      console.log("deploy the l2_staking")
+      console.log("Deploying L2 Staking...")
     
       this.l1_erc20gateway = await factory__L1_ERC20Gateway.connect(l1Wallet).deploy(
         this.l1_erc20.address,
         this.l2_erc20.address,
         l1MessengerAddress
       )
-      console.log("deploy the l1_erc20gateway")
+      console.log("Deploying L1 ERC20 Gateway...")
 
       const tx0 = await this.l2_erc20.init(
         this.l1_erc20gateway.address,      
