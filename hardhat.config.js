@@ -26,5 +26,11 @@ module.exports = {
   solidity: '0.7.6',
   ovm: {
     solcVersion: '0.7.6'
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
   }
 }
