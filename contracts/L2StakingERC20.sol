@@ -144,8 +144,9 @@ contract L2StakingERC20 {
         uint256 _amount
     ) internal {
         uint256 tonBal = ton.balanceOf(address(this));
-        if (_amount > tonBal) {
-            ton.transfer(_to, tonBal);
+        uint256 tonReward = tonBal - totalAmount;
+        if (_amount > tonReward) {
+            ton.transfer(_to, tonReward);
         } else {
             ton.transfer(_to, _amount);
         }
